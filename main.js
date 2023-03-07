@@ -1,62 +1,69 @@
-// main.js
+// Import required modules
+const transformers = require('@huggingface/transformers');
+const { GPT2LMHeadModel, GPT2Tokenizer } = transformers;
+const { GPTNeoForCausalLM, GPT2TokenizerFast } = transformers;
 
-// Import the required modules from the transformers library
-const { pipeline } = require('@huggingface/sentence-transformers');
+// Load the models and tokenizers
+const tokenizerGPT2 = new GPT2Tokenizer.fromPretrained('gpt2');
+const modelGPT2 = new GPT2LMHeadModel.fromPretrained('gpt2');
 
-// Define the chatbot function
-async function chatbot(message) {
-  // Define the input and output formats for the transformer model
-  const config = {
-    inputFormat: 'plain',
-    outputFormat: 'plain',
-  };
+const tokenizerGPTNeo = new GPT2TokenizerFast.fromPretrained('EleutherAI/gpt-neo-1.3B');
+const modelGPTNeo = new GPTNeoForCausalLM.fromPretrained('EleutherAI/gpt-neo-1.3B');
 
-  // Load the transformer model
-  const model = await pipeline({
-    model: 'microsoft/DialoGPT-large',
-    ...config,
-  });
+// Get the HTML elements
+const messageInput = document.getElementById('message');
+const chatLog = document.getElementById('chatlog');
+const modelSelect = document.getElementById('model');
 
-  // Generate a response to the input message using the transformer model
-  const response = await model(message);
+// Function to generate a response based on the selected model
+async function generateResponse(prompt) {
+  let tokenizer, model;
+  if (modelSelect.value === 'gpt2') {
+    tokenizer = tokenizerGPT2;
+    model = modelGPT2;
+  } else if (modelSelect.value === 'gptneo') {
+    tokenizer = tokenizerGPTNeo;
+    model = modelGPTNeo;
+  }
 
+  const inputIds = tokenizer.encode(prompt);
+  const output = await model.generate(inputIds, { max_length: 1000 });
+  const response = tokenizer.decode(output[0], { skipSpecialTokens: true });
   return response;
 }
 
-// Get the chat form and chatlogs elements
-const chatForm = document.querySelector('.chat-form');
-const chatlogs = document.querySelector('.chatlogs');
+// Function to add a message to the chat log
+function addMessageToLog(message, isUser = false) {
+  const messageElement = document.createElement('div');
+  messageElement.classList.add('message');
+  if (isUser) {
+    messageElement.classList.add('user-message');
+  } else {
+    messageElement.classList.add('bot-message');
+  }
+  messageElement.innerText = message;
+  chatLog.appendChild(messageElement);
+}
 
-// Add an event listener to the chat form submit button
-chatForm.addEventListener('submit', async (event) => {
-  // Prevent the form from being submitted
-  event.preventDefault();
+// Function to send a message and receive a response
+async function sendMessage() {
+  const message = messageInput.value;
+  if (message) {
+    addMessageToLog(message, true);
+    messageInput.value = '';
+    const response = await generateResponse(message);
+    addMessageToLog(response);
+  }
+}
 
-  // Get the input message from the chat form input element
-  const message = event.target.elements.message.value;
+// Add an event listener to the Send button
+const sendButton = document.querySelector('.chat-form button');
+sendButton.addEventListener('click', sendMessage);
 
-  // If the input message is not empty
-  if (message.trim() !== '') {
-    // Add the user's message to the chatlogs
-    chatlogs.innerHTML += `
-      <div class="chat">
-        <div class="user-icon">👤</div>
-        <div class="user-message">${message}</div>
-      </div>
-    `;
-
-    // Generate a response to the input message using the chatbot function
-    const response = await chatbot(message);
-
-    // Add the chatbot's response to the chatlogs
-    chatlogs.innerHTML += `
-      <div class="chat">
-        <div class="bot-icon">🤖</div>
-        <div class="bot-message">${response}</div>
-      </div>
-    `;
-
-    // Clear the chat form input element
-    event.target.elements.message.value = '';
+// Add an event listener to the message input to allow submitting with Enter key
+messageInput.addEventListener('keyup', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    sendButton.click();
   }
 });

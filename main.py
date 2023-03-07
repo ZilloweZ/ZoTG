@@ -1,7 +1,7 @@
 from flask import Flask, request
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, GPTNeoForCausalLM, GPT2TokenizerFast
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 tokenizer_gpt2 = GPT2Tokenizer.from_pretrained('gpt2')
 model_gpt2 = GPT2LMHeadModel.from_pretrained(
@@ -33,5 +33,5 @@ def chatbot():
     return response
 
 
-if _name_ == '_main_':
+if __name__ == '_main_':
     app.run(debug=True)

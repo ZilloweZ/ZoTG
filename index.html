@@ -23,7 +23,30 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js"></script>
-    <script src="main.js"></script>
+    <script>
+      const chatlog = document.getElementById("chatlog");
+
+      function sendMessage() {
+        const message = document.getElementById("message").value;
+        const model = document.getElementById("model").value;
+
+        fetch("/chatbot", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message: message, model: model }),
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            chatlog.innerHTML += `<div class="chat self">${message}</div>`;
+            chatlog.innerHTML += `<div class="chat bot">${data}</div>`;
+          })
+          .catch((error) => console.log(error));
+
+        document.getElementById("message").value = "";
+      }
+    </script>
+
   </body>
 </html>

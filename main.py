@@ -34,4 +34,4 @@ def chatbot():
 
 
 if __name__ == '_main_':
-    app.run(debug=True)
+    app.run(host='0.0.0.0')

@@ -12,14 +12,16 @@
         <div class="chatlogs">
           <div id="chatlog" class="chat"></div>
         </div>
-        <div class="chat-form">
-          <input type="text" id="message" placeholder="Type a message..." />
-          <button type="submit" onclick="sendMessage()">Send</button>
-          <select id="model">
-            <option value="gpt2">GPT-2</option>
-            <option value="gptneo">GPT-Neo</option>
-          </select>
-        </div>
+        <form id="message-form" action="/chatbot" method="POST">
+          <div class="chat-form">
+            <input type="text" id="message" name="message" placeholder="Type a message..." />
+            <button type="submit">Send</button>
+            <select id="model" name="model">
+              <option value="gpt2">GPT-2</option>
+              <option value="gptneo">GPT-Neo</option>
+            </select>
+          </div>
+        </form>
       </div>
     </div>
 
